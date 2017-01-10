@@ -1,20 +1,56 @@
-function renderStatus(statusText) {
-  document.getElementById('status').textContent = statusText;
+function importBookmarks() {
+    // Bring data from the front end
+    var data = $('#exportedDeliciousBookmarks').val();
+    var bookmarksObj = JSON.parse(data);
+
+    // Re-format the data and put it into a Map object {<tag>:[<bookmarkObj>]...}
+    var map = new Map();
+    for (var key in bookmarksObj) {
+        var tag = bookmarksObj[key]["tags"][0].toLowerCase(); //just use the first tag since chrome bookmarks cant do multiple tags
+        var bookmarksArr = map.get(tag);
+        if (bookmarksArr == undefined) {
+            bookmarksArr = new Array(bookmarksObj[key]);
+            map.set(tag, bookmarksArr);
+        } else {
+            bookmarksArr.push(bookmarksObj[key]);
+            map.set(tag, bookmarksArr);
+        }
+    }
+
+    // User chrome bookmarks API to create the root folder 'Imported from Delicious' and create a folder
+    // for each tag under the root folder and add the bookmarks to the tag folders respectively
+    chrome.bookmarks.getTree(
+        function(node) {
+            bookmarkBarNode = node[0].children[0]; //node location for chrome 'bookmark bar'
+            chrome.bookmarks.create({
+                    'parentId': bookmarkBarNode.id,
+                    'title': 'Imported From Delicious'
+                },
+                function(importFolder) {
+                    // Iterate through the map, create a chrome folder for each tag and add the bookmarks using the chrome api
+                    for (var mapToArr of map) {
+                        var tag = mapToArr[0];
+                        var bookmarksArr = mapToArr[1];
+                        addBookmarks(importFolder.id, tag, bookmarksArr);
+                    }
+                });
+        });
 }
 
-function createDeliciousFolder(bookMarkBarId){
-  var node = chrome.bookmarks.getTree(
-    function(node){
-      bookmarkBarNode = node[0].children[0]; //node location for chrome 'bookmark bar'. children[2] is 'Other bookmarks'
-      chrome.bookmarks.create({'parentId': bookmarkBarNode.id,
-                               'title': 'Imported From Delicious'},
-                               function(newFolder) {
-                                 // This is the call back function where you will start adding folders into the newly created folder
-                                 // Implementing this here guarantees that the function has successfully created the folder
-                                 // This is what you have to deal with asynchronous calls
-                                 traverseNodesRecursively();
-                               });
-    });
+function addBookmarks(importFolderId, tag, bookmarksArr) {
+    chrome.bookmarks.create({
+            'parentId': importFolderId,
+            'title': tag
+        },
+        function(newTagFolder) {
+            bookmarksArr.forEach(function(bookmark) {
+                chrome.bookmarks.create({
+                    parentId: newTagFolder.id,
+                    title: bookmark.title,
+                    url: bookmark.url
+                });
+            });
+        });
 }
 
 function traverseNodesPlain(){
@@ -34,7 +70,7 @@ function traverseNodesPlain(){
 }
 
 function traverseNodesRecursively(){
-  var node = chrome.bookmarks.getTree(
+  chrome.bookmarks.getTree(
     //call back function per the specification of the .getTree method
     function(node){
       //declare and implement the helper function that traverses through nodes recursively
@@ -64,6 +100,7 @@ function traverseNodesRecursively(){
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    createDeliciousFolder();
+    document.getElementById("import_button").addEventListener("click", importBookmarks);
+    //createDeliciousFolder();
     //traverseNodesRecursively();
 });
