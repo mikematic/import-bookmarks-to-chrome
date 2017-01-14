@@ -1,9 +1,4 @@
 <!doctype html>
-<!--
- This page is shown when the extension button is clicked, because the
- "browser_action" field in manifest.json contains the "default_popup" key with
- value "popup.html".
- -->
 <html>
   <head>
     <title>My Bookmark Manager</title>
@@ -13,24 +8,19 @@
         font-size: 100%;
       }
       #status {
-        /* avoid an excessively wide status text */
         white-space: pre;
         text-overflow: ellipsis;
         overflow: hidden;
         max-width: 400px;
       }
     </style>
-
-    <!--
-      - JavaScript and HTML must be in separate files: see our Content Security
-      - Policy documentation[1] for details and explanation.
-      -
-      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
-     -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="popup.js"></script>
   </head>
   <body style="width: 400px">
+    <div id="divMessage" style='display:none'>
+      <h1>Process</h1>
+    </div>
     <textarea id="exportedDeliciousBookmarks" rows="4" cols="50">
       {
         "1": {

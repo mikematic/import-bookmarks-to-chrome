@@ -126,6 +126,4 @@ function traverseNodesRecursively(){
 // Add EventListener for the import button
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById("import_button").addEventListener("click", importBookmarks);
-    //createDeliciousFolder();
-    //traverseNodesRecursively();
 });
