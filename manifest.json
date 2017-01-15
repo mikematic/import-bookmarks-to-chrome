@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'",
-  "name": "Import Delicious Bookmarks",
-  "description": "This extension allows you to import your bookmarks from delicious into chrome bookmarks",
+  "name": "Import Bookmarks to Chrome",
+  "description": "This extension allows you to import your bookmarks into chrome bookmarks",
   "version": "1.0",
 
   "browser_action": {

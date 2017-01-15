@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>My Bookmark Manager</title>
+    <title>Import Bookmarks to Chrome</title>
     <style>
       body {
         font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
@@ -18,37 +18,29 @@
     <script src="popup.js"></script>
   </head>
   <body style="width: 400px">
-    <div id="divMessage" style='display:none'>
-      <h1>Process</h1>
+    <img id="loading_img" src="loading-spinner.gif" style="display: none" height="100" width="200"/>
+    <div id="completedMessage" style="display: none">
     </div>
-    <textarea id="exportedDeliciousBookmarks" rows="4" cols="50">
-      {
-        "1": {
+    <div id="instructionDiv">
+      <h5>Paste your bookmarks in the text area below and click import</h5>
+      <h6>sample format containing two bookmarks is already in textbox.</h6>
+    </div>
+    <textarea id="importTxtArea" rows="4" cols="50" wrap="soft">
+      [{
           "title": "Google",
           "url": "https://www.google.com/",
-          "savedDate": "This link recently saved by mikematic on October 22, 2015",
           "tags": [
             "search engine",
             "cloud"
           ]
         },
-        "2": {
+        {
          "title": "Amazon",
          "url": "https://www.amazon.com",
-         "savedDate": "This link recently saved by mikematic on August 25, 2015",
          "tags": [
            "shopping"
          ]
-       },
-       "3": {
-         "title": "DuckDuckGo",
-         "url": "https://duckduckgo.com/",
-         "savedDate": "This link recently saved by mikematic on August 25, 2015",
-         "tags": [
-           "search engine"
-         ]
-       }
-    }
+       }]
     </textarea>
     <br>
     <button id="import_button">import</button>
