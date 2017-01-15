@@ -32,7 +32,7 @@ Chrome extension for bulk import of bookmarks into Chrome.
        }]
 ```
 
-3.  Click import!
+3. Click import!
 
 4. The bookmarks will be added in a folder named 'Imported From Delicious' under the bookmarks bar
 
