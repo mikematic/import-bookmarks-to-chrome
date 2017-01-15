@@ -11,7 +11,7 @@ Chrome extension for bulk import of bookmarks into Chrome.
 ### Using
 1. Click the blue Kinopio icon for the extension
 
-2. Paste your import data in the JSON format below in the text area
+2. Paste your import data in format below
 
 ### Sample input JSON for import
 ```json
