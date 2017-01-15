@@ -14,60 +14,64 @@ function importBkmrks() {
     var bkmrksArr = JSON.parse(data);
     numBkmrks = bkmrksArr.length;
 
-    // Uses chrome bookmarks API to create the root folder 'Imported from Delicious' and create a folder
-    // for each tag under the root folder and adds the bookmarks to the tag folders respectively
-    chrome.bookmarks.create({
-            'parentId': '1', // Id for Bookmark Bar Node
-            'title': 'Imported from Delicious'
-        },
-        function(importFolder) {
-            outerFunc(importFolder.id, bkmrksArr);
-        });
-}
-
-function outerFunc(importFolderId, bkmrksArr) {
-    if (bkmrksArr.length > 0) {
-        var currObj = bkmrksArr.pop();
-        chrome.bookmarks.search(currObj.tags[0], function callback(searchResultNodesArr) {
-            innerFunc(importFolderId, searchResultNodesArr, currObj, bkmrksArr);
-        });
-    }
-    else{
-      // Change UI to reflect completed state
-      document.getElementById("loading_img").style.display = "none";
-      document.getElementById("completedMessage").style.display = "block";
-      document.getElementById("completedMessage").innerHTML = '<h1>' + numBkmrks + ' bookmarks imported!</h1>';
-    }
-}
-
-function innerFunc(importFolderId, searchResultNodesArr, currObj, bkmrksArr) {
-    if (searchResultNodesArr.length > 0) {
-        var searchObj = searchResultNodesArr.pop();
-        if (searchObj.title == currObj.tags[0] && searchObj.parentId == importFolderId) {
-            chrome.bookmarks.create({
-                'parentId': searchObj.id,
-                'title': currObj.title,
-                'url': currObj.url
-            });
-            outerFunc(importFolderId, bkmrksArr);
+    // Re-format the data and put it into a Map object
+    // Input Array:  [<bookmarksObj>,<bookmarksObj>...]
+    // Output Map: {<tag>:[<bookmarkObj>,<bookmarkObj>...], <tag>:[<bookmarkObj>,<bookmarkObj>...]...}
+    var bkmrksMap = new Map();
+    for (var i = 0; i < bkmrksArr.length; i++) {
+        var bkmrksObj = bkmrksArr[i];
+        if (bkmrksMap.has(bkmrksObj.tags[0])) {
+            bkmrksMap.get(bkmrksObj.tags[0]).push(bkmrksObj);
         } else {
-            innerFunc(importFolderId, searchResultNodesArr, currObj, bkmrksArr);
+            var arr = new Array(bkmrksObj);
+            bkmrksMap.set(bkmrksObj.tags[0], arr);
         }
-
-    } else {
-        chrome.bookmarks.create({
-                'parentId': importFolderId,
-                'title': currObj.tags[0]
-            },
-            function(newFolder) {
-                chrome.bookmarks.create({
-                    'parentId': newFolder.id,
-                    'title': currObj.title,
-                    'url': currObj.url
-                });
-                outerFunc(importFolderId, bkmrksArr);
-            });
     }
+    var mapAsc = new Map(bkmrksMap.sort());
+    console.log(mapAsc);
+
+    // Pass the output map from above to the function below. Function will create a folder
+    // for each key (tag) under the root folder and adds the bookmarks to the tag folders respectively.
+    addBkmrksToChrome(bkmrksMap);
+}
+
+function addBkmrksToChrome(bkmrksMap) {
+    chrome.bookmarks.getTree(
+        function(node) {
+            bookmarkBarNode = node[0].children[0]; //node location for chrome 'bookmark bar'
+            chrome.bookmarks.create({
+                    'parentId': bookmarkBarNode.id,
+                    'title': 'Imported From Delicious'
+                },
+                function(importFolder) {
+                    // Iterate through the map, create a chrome folder for each tag and add the bookmarks using the chrome bookmark api
+                    for (var mapToArr of bkmrksMap) {
+                        var tag = mapToArr[0];
+                        var bookmarksArr = mapToArr[1];
+                        addFolderThenBkmrks(importFolder.id, tag, bookmarksArr);
+                    }
+                    // Change UI to reflect completed state
+                    document.getElementById("loading_img").style.display = "none";
+                    document.getElementById("completedMessage").style.display = "block";
+                    document.getElementById("completedMessage").innerHTML = '<h1>' + numBkmrks + ' bookmarks imported!</h1>';
+                });
+        });
+}
+
+function addFolderThenBkmrks(importFolderId, tag, bookmarksArr) {
+    chrome.bookmarks.create({
+            'parentId': importFolderId,
+            'title': tag
+        },
+        function(newTagFolder) {
+            bookmarksArr.forEach(function(bookmark) {
+                chrome.bookmarks.create({
+                    parentId: newTagFolder.id,
+                    title: bookmark.title,
+                    url: bookmark.url
+                });
+            });
+        });
 }
 
 // Add EventListener for the import button
