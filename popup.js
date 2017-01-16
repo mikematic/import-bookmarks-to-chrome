@@ -14,6 +14,17 @@ function importBkmrks() {
     var bkmrksArr = JSON.parse(data);
     numBkmrks = bkmrksArr.length;
 
+    // Sort the array by its first tag
+    bkmrksArr = bkmrksArr.sort(function(a, b) {
+        if (a.tags[0].toUpperCase() > b.tags[0].toUpperCase()) {
+            return 1;
+        } else if (a.tags[0].toUpperCase() < b.tags[0].toUpperCase()) {
+            return -1;
+        } else {
+            return 0;
+        }
+    });
+
     // Re-format the data and put it into a Map object
     // Input Array:  [<bookmarksObj>,<bookmarksObj>...]
     // Output Map: {<tag>:[<bookmarkObj>,<bookmarkObj>...], <tag>:[<bookmarkObj>,<bookmarkObj>...]...}
@@ -28,11 +39,11 @@ function importBkmrks() {
         }
     }
 
-    // Pass the output map from above to the function below. Function will create a folder
-    // for each key (tag) under the root folder and adds the bookmarks to the tag folders respectively.
+    // Pass the sorted map to the function below.
     addBkmrksToChrome(bkmrksMap);
 }
 
+// Function takes map object and creates folder for each tag and adds the associated bookmarks
 function addBkmrksToChrome(bkmrksMap) {
     chrome.bookmarks.getTree(
         function(node) {
@@ -56,6 +67,7 @@ function addBkmrksToChrome(bkmrksMap) {
         });
 }
 
+// Function that takes a tag and array of associated bookmarks and adds them to the import folder
 function addFolderThenBkmrks(importFolderId, tag, bookmarksArr) {
     chrome.bookmarks.create({
             'parentId': importFolderId,
