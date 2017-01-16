@@ -27,8 +27,6 @@ function importBkmrks() {
             bkmrksMap.set(bkmrksObj.tags[0], arr);
         }
     }
-    var mapAsc = new Map(bkmrksMap.sort());
-    console.log(mapAsc);
 
     // Pass the output map from above to the function below. Function will create a folder
     // for each key (tag) under the root folder and adds the bookmarks to the tag folders respectively.
